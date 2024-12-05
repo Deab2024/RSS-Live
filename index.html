@@ -13,16 +13,16 @@
             margin: 0;
             padding: 0;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
+            justify-content: flex-start; /* Placera innehåll i vänster kant */
+            align-items: center;   /* Vertikal centrering */
             height: 100vh;
         }
         #rssFeed {
             max-width: 90%; /* Låt texten använda hela bredden */
-            padding: 0 30px; /* Rum från skärmens kanter */
+            padding-left: 80px; /* Ökat avstånd till vänster */
             line-height: 1.2; /* Kompakt men läsbart radavstånd */
             box-sizing: border-box; /* Inkludera padding i bredd */
+            text-align: left; /* Vänsterställ texten */
         }
         .event-title {
             font-size: 42px; /* Huvudtextstorlek */
