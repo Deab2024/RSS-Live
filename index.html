@@ -9,7 +9,7 @@
             background-color: black; /* Svart bakgrund */
             color: white;           /* Vit text */
             font-family: Arial, sans-serif; /* Typsnitt Arial */
-            font-size: 42px;       /* Rekommenderad textstorlek */
+            font-size: 42px;       /* Textstorlek för titel */
             margin: 0;
             padding: 0;
             display: flex;
@@ -21,21 +21,33 @@
         #rssFeed {
             max-width: 90%; /* Låt texten använda hela bredden */
             padding: 0 30px; /* Rum från skärmens kanter */
-            line-height: 1.1; /* Kompakt men läsbart radavstånd */
+            line-height: 1.2; /* Kompakt men läsbart radavstånd */
             box-sizing: border-box; /* Inkludera padding i bredd */
+        }
+        .event-title {
+            font-size: 42px; /* Huvudtextstorlek */
+            margin: 0;
+        }
+        .event-location {
+            font-size: 28px; /* Mindre textstorlek för platsen */
+            margin: 5px 0 0;
+            color: #ccc; /* Ljussatt grå text för att särskilja platsen */
         }
     </style>
 </head>
 <body>
 
-<div id="rssFeed">Laddar evenemang...</div>
+<div id="rssFeed">
+    <div id="eventTitle" class="event-title">Laddar evenemang...</div>
+    <div id="eventLocation" class="event-location"></div>
+</div>
 
 <script>
     const rssUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://visiteskilstuna.se/rest-api/rssService/getRssFeed?portletId=12.5b899160171ac5273c72ad9f&pageId=2.369be3c31580a19562d1977e');
 
     let events = []; // Lagrar alla evenemang
     let currentEventIndex = 0; // Index för aktuellt evenemang
-    let eventTimeout; // Variabel för att lagra setTimeout
+    let eventInterval; // Variabel för att lagra setInterval
 
     // Funktion för att hämta och visa RSS-flödet
     async function fetchRSS() {
@@ -56,17 +68,19 @@
                 return;
             }
 
-            // Spara titlarna för alla evenemang
+            // Spara titlar och platser för alla evenemang
             events = [];
             for (let i = 0; i < items.length; i++) {
                 const title = items[i].getElementsByTagName("title")[0]?.textContent || 'Okänt evenemang';
-                events.push(title);
+                const location = items[i].getElementsByTagName("description")[0]?.textContent || 'Plats ej angiven';
+                events.push({ title, location });
             }
 
-            // Starta visning av evenemang
-            currentEventIndex = 0;
-            clearTimeout(eventTimeout); // Rensa tidigare timeout
-            showNextEvent();
+            // Starta visning av evenemang om det inte redan körs
+            if (!eventInterval) {
+                showNextEvent(); // Visa första evenemanget
+                eventInterval = setInterval(showNextEvent, 10000); // Växla var 10:e sekund
+            }
 
         } catch (error) {
             console.error('Fel vid hämtning av RSS-flödet:', error);
@@ -76,16 +90,19 @@
 
     // Funktion för att visa nästa evenemang
     function showNextEvent() {
-        const rssFeed = document.getElementById("rssFeed");
+        const eventTitle = document.getElementById("eventTitle");
+        const eventLocation = document.getElementById("eventLocation");
+
         if (events.length > 0) {
-            rssFeed.textContent = events[currentEventIndex];
+            const currentEvent = events[currentEventIndex];
+            eventTitle.textContent = currentEvent.title;
+            eventLocation.textContent = currentEvent.location;
+
             currentEventIndex = (currentEventIndex + 1) % events.length; // Går till nästa, loopar om vid slut
         } else {
-            rssFeed.textContent = 'Inga evenemang hittades.';
+            eventTitle.textContent = 'Inga evenemang hittades.';
+            eventLocation.textContent = '';
         }
-
-        // Ställ in timeout för nästa evenemang
-        eventTimeout = setTimeout(showNextEvent, 10000); // 10 sekunder
     }
 
     // Kör funktionen för att hämta RSS-flödet initialt
