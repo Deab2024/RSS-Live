@@ -38,7 +38,7 @@
 <body>
 
 <div id="rssFeed">
-    <div id="eventTitle" class="event-title">Laddar evenemang...</div>
+    <div id="eventTitle" class="event-title">Välkommen till Eskilstuna</div>
     <div id="eventLocation" class="event-location"></div>
 </div>
 
@@ -64,7 +64,7 @@
 
             const items = xmlDoc.getElementsByTagName("item");
             if (items.length === 0) {
-                rssFeed.textContent = 'Inga evenemang hittades.';
+                resetToWelcomeMessage();
                 return;
             }
 
@@ -84,7 +84,7 @@
 
         } catch (error) {
             console.error('Fel vid hämtning av RSS-flödet:', error);
-            rssFeed.textContent = 'Kunde inte hämta evenemang.';
+            resetToWelcomeMessage();
         }
     }
 
@@ -100,9 +100,17 @@
 
             currentEventIndex = (currentEventIndex + 1) % events.length; // Går till nästa, loopar om vid slut
         } else {
-            eventTitle.textContent = 'Inga evenemang hittades.';
-            eventLocation.textContent = '';
+            resetToWelcomeMessage();
         }
+    }
+
+    // Funktion för att återgå till välkomstmeddelande
+    function resetToWelcomeMessage() {
+        const eventTitle = document.getElementById("eventTitle");
+        const eventLocation = document.getElementById("eventLocation");
+
+        eventTitle.textContent = 'Välkommen till Eskilstuna';
+        eventLocation.textContent = '';
     }
 
     // Kör funktionen för att hämta RSS-flödet initialt
