@@ -17,7 +17,7 @@
             height: 100vh;
         }
         #rssFeed {
-            max-width: 100%; /* Använd hela skärmbredden */
+            max-width: 100%;
             padding-left: 20px; /* Minskad vänster-padding */
             line-height: 1.1; /* Kompakt radavstånd */
             box-sizing: border-box; /* Inkludera padding i bredd */
@@ -27,16 +27,16 @@
             font-size: 24px; /* Huvudtextstorlek */
             margin: 0;
             white-space: nowrap; /* Förhindra radbrytning */
-            overflow: hidden; /* Dölja överskjutande text */
+            overflow: hidden;
             text-overflow: ellipsis; /* "..." för text som inte ryms */
         }
         .event-location {
             font-size: 18px; /* Mindre textstorlek för platsen */
             margin: 5px 0 0;
-            color: white; /* Vit text */
-            white-space: nowrap; /* Förhindra radbrytning */
-            overflow: hidden; /* Dölja överskjutande text */
-            text-overflow: ellipsis; /* "..." för text som inte ryms */
+            color: white;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
     </style>
 </head>
@@ -100,11 +100,13 @@
 
                 const formattedDate = formatDateRange(title);
 
+                // Rensa bort datum från titeln
                 title = title.replace(/(\d{1,2}\s\w{3})(\s?-\s?\d{1,2}\s\w{3})?/gi, '').trim();
 
+                // Bygg upp titeln utan extra kommatecken
                 let displayTitle = formattedDate;
-                if (title) {
-                    displayTitle = `${formattedDate}, ${title}`;
+                if (title && title.length > 0) {
+                    displayTitle += `, ${title}`;
                 }
 
                 events.push({ title: displayTitle, location });
