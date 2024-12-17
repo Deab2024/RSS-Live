@@ -54,18 +54,16 @@
     let currentEventIndex = 0;
     let eventInterval;
 
-    // Månadernas namn och deras numeriska representation
     const monthMap = {
         "jan": 1, "feb": 2, "mar": 3, "apr": 4, "maj": 5, "jun": 6,
         "jul": 7, "aug": 8, "sep": 9, "okt": 10, "nov": 11, "dec": 12
     };
 
-    // Funktion för att konvertera datumformat "5 jan - 8 jan" till "5/1 - 8/1"
     function formatDateRange(dateString) {
         const datePattern = /(\d{1,2})\s(\w{3})(?:\s?-\s?(\d{1,2})\s?(\w{3}))?/i;
         const match = dateString.match(datePattern);
         if (match) {
-            const startDay = parseInt(match[1], 10); // Tar bort inledande nollor
+            const startDay = parseInt(match[1], 10);
             const startMonth = monthMap[match[2].toLowerCase()];
             if (match[3] && match[4]) {
                 const endDay = parseInt(match[3], 10);
@@ -77,7 +75,6 @@
         return '';
     }
 
-    // Funktion för att hämta och visa RSS-flödet
     async function fetchRSS() {
         try {
             const response = await fetch(rssUrl);
@@ -101,16 +98,13 @@
                 let title = items[i].getElementsByTagName("title")[0]?.textContent || '';
                 const location = items[i].getElementsByTagName("description")[0]?.textContent || 'Plats ej angiven';
 
-                // Extrahera och formatera datum
                 const formattedDate = formatDateRange(title);
 
-                // Rensa bort datum från titeln
                 title = title.replace(/(\d{1,2}\s\w{3})(\s?-\s?\d{1,2}\s\w{3})?/gi, '').trim();
 
-                // Bygg upp titeln utan extra kommatecken
                 let displayTitle = formattedDate;
                 if (title) {
-                    displayTitle += `, ${title}`;
+                    displayTitle = `${formattedDate}, ${title}`;
                 }
 
                 events.push({ title: displayTitle, location });
@@ -120,13 +114,11 @@
                 showNextEvent();
                 eventInterval = setInterval(showNextEvent, 10000);
             }
-
         } catch (error) {
             resetToWelcomeMessage();
         }
     }
 
-    // Funktion för att visa nästa evenemang
     function showNextEvent() {
         const eventTitle = document.getElementById("eventTitle");
         const eventLocation = document.getElementById("eventLocation");
@@ -142,13 +134,11 @@
         }
     }
 
-    // Funktion för att visa välkomstmeddelande
     function resetToWelcomeMessage() {
         document.getElementById("eventTitle").textContent = 'Välkommen till Eskilstuna';
         document.getElementById("eventLocation").textContent = '';
     }
 
-    // Starta initial hämtning av RSS och uppdatera var 1 minut
     fetchRSS();
     setInterval(fetchRSS, 60000);
 </script>
