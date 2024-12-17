@@ -60,9 +60,9 @@
         "jul": 7, "aug": 8, "sep": 9, "okt": 10, "nov": 11, "dec": 12
     };
 
-    // Funktion för att konvertera datumformat "25 jan" till "25/1"
+    // Funktion för att konvertera datumformat "25 jan" till "25/1" eller "25/1 - 26/1"
     function formatDateRange(dateString) {
-        const datePattern = /(\d{1,2})\s(\w{3})(?:\s?-\s?(\d{1,2})\s?(\w{3}))?/i; // Matchar "25 jan" och "25 jan - 26 jan"
+        const datePattern = /(\d{1,2})\s(\w{3})(?:\s?-\s?(\d{1,2})\s?(\w{3}))?/i; // Matchar "25 jan" eller "25 jan - 26 jan"
         const match = dateString.match(datePattern);
         if (match) {
             const startDay = match[1];
@@ -70,11 +70,11 @@
             if (match[3] && match[4]) {
                 const endDay = match[3];
                 const endMonth = monthMap[match[4].toLowerCase()];
-                return `${startDay}/${startMonth} - ${endDay}/${endMonth}`; // Om det finns ett slutdatum
+                return `${startDay}/${startMonth} - ${endDay}/${endMonth}`; // Startdatum och slutdatum
             }
             return `${startDay}/${startMonth}`; // Endast startdatum
         }
-        return dateString;
+        return '';
     }
 
     // Funktion för att hämta och visa RSS-flödet
@@ -99,14 +99,19 @@
 
             events = [];
             for (let i = 0; i < items.length; i++) {
-                let title = items[i].getElementsByTagName("title")[0]?.textContent || 'Okänt evenemang';
+                let title = items[i].getElementsByTagName("title")[0]?.textContent || '';
                 const location = items[i].getElementsByTagName("description")[0]?.textContent || 'Plats ej angiven';
 
-                // Extrahera och formatera datum i titel
+                // Extrahera och formatera datum i titeln
                 const formattedDate = formatDateRange(title);
                 title = title.replace(/(\d{1,2}\s\w{3})(\s?-\s?\d{1,2}\s\w{3})?/gi, '').trim(); // Ta bort datum från titeln
 
-                const displayTitle = formattedDate ? `${formattedDate}, ${title}` : title;
+                // Bygg titeln med datum och kontrollera att inget extra komma läggs till
+                const displayTitle = formattedDate 
+                    ? title 
+                        ? `${formattedDate}, ${title}` 
+                        : formattedDate 
+                    : title;
 
                 events.push({ title: displayTitle, location });
             }
@@ -136,11 +141,13 @@
         }
     }
 
+    // Funktion för att visa välkomstmeddelande
     function resetToWelcomeMessage() {
         document.getElementById("eventTitle").textContent = 'Välkommen till Eskilstuna';
         document.getElementById("eventLocation").textContent = '';
     }
 
+    // Hämta RSS-flödet initialt och uppdatera var 1 minut
     fetchRSS();
     setInterval(fetchRSS, 60000);
 </script>
