@@ -54,16 +54,19 @@
     let currentEventIndex = 0; // Index för aktuellt evenemang
     let eventInterval; // Variabel för att lagra setInterval
 
-    function formatDate(dateString) {
-        const date = new Date(dateString);
-        if (!isNaN(date)) {
-            const day = date.getDate();
-            const month = date.getMonth() + 1;
-            return `${day}/${month}`;
+    // Funktion för att extrahera datum från text
+    function extractDateRange(title) {
+        const datePattern = /\b(\d{1,2}\/\d{1,2})(\s?-\s?(\d{1,2}\/\d{1,2}))?\b/; // Matchar "5/2" eller "5/2 - 8/2"
+        const match = title.match(datePattern);
+        if (match) {
+            const fullDate = match[0]; // Hela datumsträngen
+            title = title.replace(fullDate, '').trim(); // Ta bort datumet från titeln
+            return { date: fullDate, cleanedTitle: title };
         }
-        return '';
+        return { date: '', cleanedTitle: title };
     }
 
+    // Funktion för att hämta och visa RSS-flödet
     async function fetchRSS() {
         const rssFeed = document.getElementById("rssFeed");
         try {
@@ -83,15 +86,16 @@
                 return;
             }
 
+            // Spara titlar och platser för alla evenemang
             events = [];
             for (let i = 0; i < items.length; i++) {
-                const rawDate = items[i].getElementsByTagName("pubDate")[0]?.textContent || '';
-                const formattedDate = formatDate(rawDate);
-                let title = items[i].getElementsByTagName("title")[0]?.textContent || '';
+                let title = items[i].getElementsByTagName("title")[0]?.textContent || 'Okänt evenemang';
                 const location = items[i].getElementsByTagName("description")[0]?.textContent || 'Plats ej angiven';
 
-                title = title.replace(/\d{1,2}\s(?:jan|feb|mar|apr|maj|jun|jul|aug|sep|okt|nov|dec)/gi, '').trim();
-                const displayTitle = formattedDate ? (title ? `${formattedDate}, ${title}` : formattedDate) : title;
+                // Extrahera datum från titel
+                const { date, cleanedTitle } = extractDateRange(title);
+
+                const displayTitle = date ? `${date}, ${cleanedTitle}` : cleanedTitle;
 
                 events.push({ title: displayTitle, location });
             }
@@ -100,25 +104,29 @@
                 showNextEvent();
                 eventInterval = setInterval(showNextEvent, 10000);
             }
-        } catch {
+
+        } catch (error) {
             resetToWelcomeMessage();
         }
     }
 
+    // Funktion för att visa nästa evenemang
     function showNextEvent() {
         const eventTitle = document.getElementById("eventTitle");
         const eventLocation = document.getElementById("eventLocation");
 
         if (events.length > 0) {
             const currentEvent = events[currentEventIndex];
-            eventTitle.textContent = currentEvent.title;
-            eventLocation.textContent = currentEvent.location;
-            currentEventIndex = (currentEventIndex + 1) % events.length;
+            eventTitle.textContent = currentEvent.title; // Titel med datum
+            eventLocation.textContent = currentEvent.location; // Plats
+
+            currentEventIndex = (currentEventIndex + 1) % events.length; // Gå till nästa, loopa om vid slut
         } else {
             resetToWelcomeMessage();
         }
     }
 
+    // Funktion för att återgå till välkomstmeddelande
     function resetToWelcomeMessage() {
         document.getElementById("eventTitle").textContent = 'Välkommen till Eskilstuna';
         document.getElementById("eventLocation").textContent = '';
