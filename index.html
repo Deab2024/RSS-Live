@@ -6,9 +6,9 @@
     <title>RSS Läsare</title>
     <style>
         body {
-            background-color: black;
+            background-color: black; 
             color: white;
-            font-family: Arial, sans-serif;
+            font-family: Arial, sans-serif; 
             margin: 0;
             padding: 0;
             display: flex;
@@ -49,16 +49,13 @@
 
 <script>
     const rssUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://visiteskilstuna.se/rest-api/rssService/getRssFeed?portletId=12.5b899160171ac5273c72ad9f&pageId=2.369be3c31580a19562d1977e');
-
     let events = [];
     let currentEventIndex = 0;
-    let eventInterval;
 
-    const monthMap = {
-        "jan": 1, "feb": 2, "mar": 3, "apr": 4, "maj": 5, "jun": 6,
-        "jul": 7, "aug": 8, "sep": 9, "okt": 10, "nov": 11, "dec": 12
-    };
+    // Månader för datumkonvertering
+    const monthMap = { "jan": 1, "feb": 2, "mar": 3, "apr": 4, "maj": 5, "jun": 6, "jul": 7, "aug": 8, "sep": 9, "okt": 10, "nov": 11, "dec": 12 };
 
+    // Formatera datum till "5/2 - 8/2"
     function formatDateRange(dateString) {
         const datePattern = /(\d{1,2})\s(\w{3})(?:\s?-\s?(\d{1,2})\s?(\w{3}))?/i;
         const match = dateString.match(datePattern);
@@ -75,54 +72,44 @@
         return '';
     }
 
+    // Hämta och visa RSS-flödet
     async function fetchRSS() {
         try {
             const response = await fetch(rssUrl);
-            if (!response.ok) {
-                resetToWelcomeMessage();
-                return;
-            }
+            if (!response.ok) throw new Error("Kunde inte hämta RSS-flödet.");
 
             const data = await response.json();
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(data.contents, "text/xml");
 
             const items = xmlDoc.getElementsByTagName("item");
-            if (items.length === 0) {
-                resetToWelcomeMessage();
-                return;
-            }
-
             events = [];
+
             for (let i = 0; i < items.length; i++) {
                 let title = items[i].getElementsByTagName("title")[0]?.textContent || '';
-                const location = items[i].getElementsByTagName("description")[0]?.textContent || 'Plats ej angiven';
+                const location = items[i].getElementsByTagName("description")[0]?.textContent || '';
 
                 const formattedDate = formatDateRange(title);
-
-                // Rensa bort datum från titeln
                 title = title.replace(/(\d{1,2}\s\w{3})(\s?-\s?\d{1,2}\s\w{3})?/gi, '').trim();
 
-                // Bygg upp titeln utan extra kommatecken
                 let displayTitle = formattedDate;
-                if (title && title.length > 0) {
-                    displayTitle = `${formattedDate}, ${title}`;
-                } else {
-                    displayTitle = formattedDate; // Visa endast datum om titeln är tom
+                if (title) {
+                    displayTitle += `, ${title}`;
                 }
 
-                events.push({ title: displayTitle, location });
+                events.push({ title: displayTitle, location: location || 'Plats ej angiven' });
             }
 
-            if (!eventInterval) {
-                showNextEvent();
-                eventInterval = setInterval(showNextEvent, 10000);
-            }
+            currentEventIndex = 0;
+            showNextEvent(); // Visa första evenemanget direkt
+
         } catch (error) {
+            console.error("Fel:", error);
             resetToWelcomeMessage();
         }
     }
 
+    // Visa nästa evenemang
     function showNextEvent() {
         const eventTitle = document.getElementById("eventTitle");
         const eventLocation = document.getElementById("eventLocation");
@@ -138,13 +125,16 @@
         }
     }
 
+    // Visa välkomstmeddelande
     function resetToWelcomeMessage() {
         document.getElementById("eventTitle").textContent = 'Välkommen till Eskilstuna';
         document.getElementById("eventLocation").textContent = '';
     }
 
+    // Kör funktioner och uppdatera flödet dynamiskt
     fetchRSS();
-    setInterval(fetchRSS, 60000);
+    setInterval(fetchRSS, 30000); // Hämta nytt RSS var 30:e sekund
+    setInterval(showNextEvent, 10000); // Växla evenemang var 10:e sekund
 </script>
 
 </body>
