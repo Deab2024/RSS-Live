@@ -54,17 +54,6 @@
     let currentEventIndex = 0; // Index för aktuellt evenemang
     let eventInterval; // Variabel för att lagra setInterval
 
-    // Funktion för att formatera datum till "dag/månad"
-    function formatDate(dateString) {
-        const date = new Date(dateString);
-        if (!isNaN(date)) {
-            const day = date.getDate(); // Hämtar dag
-            const month = date.getMonth() + 1; // Hämtar månad (0-baserad)
-            return `${day}/${month}`; // Returnerar format dag/månad
-        }
-        return ''; // Om datumet inte är giltigt, returnera tom sträng
-    }
-
     // Funktion för att hämta och visa RSS-flödet
     async function fetchRSS() {
         const rssFeed = document.getElementById("rssFeed");
@@ -88,15 +77,9 @@
             // Spara titlar och platser för alla evenemang
             events = [];
             for (let i = 0; i < items.length; i++) {
-                const rawDate = items[i].getElementsByTagName("pubDate")[0]?.textContent || ''; // Hämtar datum
-                const formattedDate = formatDate(rawDate); // Formatera datum till 1/12, 5/6, etc.
                 const title = items[i].getElementsByTagName("title")[0]?.textContent || 'Okänt evenemang';
                 const location = items[i].getElementsByTagName("description")[0]?.textContent || 'Plats ej angiven';
-
-                // Lägg endast datum framför titeln
-                const displayTitle = formattedDate ? `${formattedDate} - ${title}` : title;
-
-                events.push({ title: displayTitle, location });
+                events.push({ title, location });
             }
 
             // Starta visning av evenemang om det inte redan körs
@@ -106,6 +89,7 @@
             }
 
         } catch (error) {
+            console.error('Fel vid hämtning av RSS-flödet:', error);
             resetToWelcomeMessage();
         }
     }
@@ -117,8 +101,8 @@
 
         if (events.length > 0) {
             const currentEvent = events[currentEventIndex];
-            eventTitle.textContent = currentEvent.title; // Titel med datum
-            eventLocation.textContent = currentEvent.location; // Plats utan datum
+            eventTitle.textContent = currentEvent.title;
+            eventLocation.textContent = currentEvent.location;
 
             currentEventIndex = (currentEventIndex + 1) % events.length; // Går till nästa, loopar om vid slut
         } else {
@@ -134,14 +118,6 @@
         eventTitle.textContent = 'Välkommen till Eskilstuna';
         eventLocation.textContent = '';
     }
-
-    // Observera ändringar i stil eller innehåll och ladda om flödet
-    const rssFeedContainer = document.getElementById('rssFeed');
-    const observer = new MutationObserver(() => {
-        fetchRSS(); // Ladda om flödet om ändringar upptäcks
-    });
-
-    observer.observe(rssFeedContainer, { attributes: true, childList: true, subtree: true });
 
     // Kör funktionen för att hämta RSS-flödet initialt
     fetchRSS();
