@@ -60,7 +60,7 @@
         "jul": 7, "aug": 8, "sep": 9, "okt": 10, "nov": 11, "dec": 12
     };
 
-    // Funktion för att konvertera datumformat "05 jan - 08 jan" till "5/1 - 8/1"
+    // Funktion för att konvertera datumformat "5 jan - 8 jan" till "5/1 - 8/1"
     function formatDateRange(dateString) {
         const datePattern = /(\d{1,2})\s(\w{3})(?:\s?-\s?(\d{1,2})\s?(\w{3}))?/i;
         const match = dateString.match(datePattern);
