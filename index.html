@@ -106,7 +106,6 @@
             }
 
         } catch (error) {
-            console.error('Fel vid hämtning av RSS-flödet:', error);
             resetToWelcomeMessage();
         }
     }
@@ -135,6 +134,14 @@
         eventTitle.textContent = 'Välkommen till Eskilstuna';
         eventLocation.textContent = '';
     }
+
+    // Observera ändringar i stil eller innehåll och ladda om flödet
+    const rssFeedContainer = document.getElementById('rssFeed');
+    const observer = new MutationObserver(() => {
+        fetchRSS(); // Ladda om flödet om ändringar upptäcks
+    });
+
+    observer.observe(rssFeedContainer, { attributes: true, childList: true, subtree: true });
 
     // Kör funktionen för att hämta RSS-flödet initialt
     fetchRSS();
