@@ -18,7 +18,7 @@
         }
         #rssFeed {
             max-width: 100%; /* Använd hela skärmbredden */
-            padding-left: 40px; /* Minskad vänster-padding */
+            padding-left: 20px; /* Minskad vänster-padding */
             line-height: 1.1; /* Kompakt radavstånd */
             box-sizing: border-box; /* Inkludera padding i bredd */
             text-align: left; /* Vänsterställ texten */
@@ -54,6 +54,17 @@
     let currentEventIndex = 0; // Index för aktuellt evenemang
     let eventInterval; // Variabel för att lagra setInterval
 
+    // Funktion för att formatera datum till "dag/månad"
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        if (!isNaN(date)) {
+            const day = date.getDate(); // Hämtar dag
+            const month = date.getMonth() + 1; // Hämtar månad (0-baserad)
+            return `${day}/${month}`; // Returnerar format dag/månad
+        }
+        return ''; // Om datumet inte är giltigt, returnera tom sträng
+    }
+
     // Funktion för att hämta och visa RSS-flödet
     async function fetchRSS() {
         const rssFeed = document.getElementById("rssFeed");
@@ -78,8 +89,14 @@
             events = [];
             for (let i = 0; i < items.length; i++) {
                 const title = items[i].getElementsByTagName("title")[0]?.textContent || 'Okänt evenemang';
+                const rawDate = items[i].getElementsByTagName("pubDate")[0]?.textContent || ''; // Hämtar publiceringsdatum
+                const formattedDate = formatDate(rawDate); // Formatera datum
                 const location = items[i].getElementsByTagName("description")[0]?.textContent || 'Plats ej angiven';
-                events.push({ title, location });
+
+                // Lägg till det formaterade datumet i platsinformationen
+                const displayLocation = formattedDate ? `${formattedDate} - ${location}` : location;
+
+                events.push({ title, location: displayLocation });
             }
 
             // Starta visning av evenemang om det inte redan körs
