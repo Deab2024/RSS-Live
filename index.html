@@ -50,20 +50,31 @@
 <script>
     const rssUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://visiteskilstuna.se/rest-api/rssService/getRssFeed?portletId=12.5b899160171ac5273c72ad9f&pageId=2.369be3c31580a19562d1977e');
 
-    let events = []; // Lagrar alla evenemang
-    let currentEventIndex = 0; // Index för aktuellt evenemang
-    let eventInterval; // Variabel för att lagra setInterval
+    let events = [];
+    let currentEventIndex = 0;
+    let eventInterval;
 
-    // Funktion för att extrahera datum från text
-    function extractDateRange(title) {
-        const datePattern = /\b(\d{1,2}\/\d{1,2})(\s?-\s?(\d{1,2}\/\d{1,2}))?\b/; // Matchar "5/2" eller "5/2 - 8/2"
-        const match = title.match(datePattern);
+    // Månadernas namn och siffror
+    const monthMap = {
+        "jan": 1, "feb": 2, "mar": 3, "apr": 4, "maj": 5, "jun": 6,
+        "jul": 7, "aug": 8, "sep": 9, "okt": 10, "nov": 11, "dec": 12
+    };
+
+    // Funktion för att konvertera datumformat "25 jan" till "25/1"
+    function formatDateRange(dateString) {
+        const datePattern = /(\d{1,2})\s(\w{3})(?:\s?-\s?(\d{1,2})\s?(\w{3}))?/i; // Matchar "25 jan" och "25 jan - 26 jan"
+        const match = dateString.match(datePattern);
         if (match) {
-            const fullDate = match[0]; // Hela datumsträngen
-            title = title.replace(fullDate, '').trim(); // Ta bort datumet från titeln
-            return { date: fullDate, cleanedTitle: title };
+            const startDay = match[1];
+            const startMonth = monthMap[match[2].toLowerCase()];
+            if (match[3] && match[4]) {
+                const endDay = match[3];
+                const endMonth = monthMap[match[4].toLowerCase()];
+                return `${startDay}/${startMonth} - ${endDay}/${endMonth}`; // Om det finns ett slutdatum
+            }
+            return `${startDay}/${startMonth}`; // Endast startdatum
         }
-        return { date: '', cleanedTitle: title };
+        return dateString;
     }
 
     // Funktion för att hämta och visa RSS-flödet
@@ -86,16 +97,16 @@
                 return;
             }
 
-            // Spara titlar och platser för alla evenemang
             events = [];
             for (let i = 0; i < items.length; i++) {
                 let title = items[i].getElementsByTagName("title")[0]?.textContent || 'Okänt evenemang';
                 const location = items[i].getElementsByTagName("description")[0]?.textContent || 'Plats ej angiven';
 
-                // Extrahera datum från titel
-                const { date, cleanedTitle } = extractDateRange(title);
+                // Extrahera och formatera datum i titel
+                const formattedDate = formatDateRange(title);
+                title = title.replace(/(\d{1,2}\s\w{3})(\s?-\s?\d{1,2}\s\w{3})?/gi, '').trim(); // Ta bort datum från titeln
 
-                const displayTitle = date ? `${date}, ${cleanedTitle}` : cleanedTitle;
+                const displayTitle = formattedDate ? `${formattedDate}, ${title}` : title;
 
                 events.push({ title: displayTitle, location });
             }
@@ -104,7 +115,6 @@
                 showNextEvent();
                 eventInterval = setInterval(showNextEvent, 10000);
             }
-
         } catch (error) {
             resetToWelcomeMessage();
         }
@@ -117,16 +127,15 @@
 
         if (events.length > 0) {
             const currentEvent = events[currentEventIndex];
-            eventTitle.textContent = currentEvent.title; // Titel med datum
-            eventLocation.textContent = currentEvent.location; // Plats
+            eventTitle.textContent = currentEvent.title;
+            eventLocation.textContent = currentEvent.location;
 
-            currentEventIndex = (currentEventIndex + 1) % events.length; // Gå till nästa, loopa om vid slut
+            currentEventIndex = (currentEventIndex + 1) % events.length;
         } else {
             resetToWelcomeMessage();
         }
     }
 
-    // Funktion för att återgå till välkomstmeddelande
     function resetToWelcomeMessage() {
         document.getElementById("eventTitle").textContent = 'Välkommen till Eskilstuna';
         document.getElementById("eventLocation").textContent = '';
