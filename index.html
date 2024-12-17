@@ -54,32 +54,8 @@
     let currentEventIndex = 0;
     let eventInterval;
 
-    // Månadernas namn och siffror
-    const monthMap = {
-        "jan": 1, "feb": 2, "mar": 3, "apr": 4, "maj": 5, "jun": 6,
-        "jul": 7, "aug": 8, "sep": 9, "okt": 10, "nov": 11, "dec": 12
-    };
-
-    // Funktion för att konvertera datumformat "25 jan" till "25/1" eller "25/1 - 26/1"
-    function formatDateRange(dateString) {
-        const datePattern = /(\d{1,2})\s(\w{3})(?:\s?-\s?(\d{1,2})\s?(\w{3}))?/i; // Matchar "25 jan" eller "25 jan - 26 jan"
-        const match = dateString.match(datePattern);
-        if (match) {
-            const startDay = match[1];
-            const startMonth = monthMap[match[2].toLowerCase()];
-            if (match[3] && match[4]) {
-                const endDay = match[3];
-                const endMonth = monthMap[match[4].toLowerCase()];
-                return `${startDay}/${startMonth} - ${endDay}/${endMonth}`; // Startdatum och slutdatum
-            }
-            return `${startDay}/${startMonth}`; // Endast startdatum
-        }
-        return '';
-    }
-
     // Funktion för att hämta och visa RSS-flödet
     async function fetchRSS() {
-        const rssFeed = document.getElementById("rssFeed");
         try {
             const response = await fetch(rssUrl);
             if (!response.ok) {
@@ -102,16 +78,11 @@
                 let title = items[i].getElementsByTagName("title")[0]?.textContent || '';
                 const location = items[i].getElementsByTagName("description")[0]?.textContent || 'Plats ej angiven';
 
-                // Extrahera och formatera datum i titeln
+                // Rensa bort datum från titeln
                 const formattedDate = formatDateRange(title);
-                title = title.replace(/(\d{1,2}\s\w{3})(\s?-\s?\d{1,2}\s\w{3})?/gi, '').trim(); // Ta bort datum från titeln
+                title = title.replace(/(\d{1,2}\s\w{3})(\s?-\s?\d{1,2}\s\w{3})?/gi, '').trim();
 
-                // Bygg titeln med datum och kontrollera att inget extra komma läggs till
-                const displayTitle = formattedDate 
-                    ? title 
-                        ? `${formattedDate}, ${title}` 
-                        : formattedDate 
-                    : title;
+                const displayTitle = formattedDate ? (title ? `${formattedDate}, ${title}` : formattedDate) : title;
 
                 events.push({ title: displayTitle, location });
             }
@@ -125,7 +96,24 @@
         }
     }
 
-    // Funktion för att visa nästa evenemang
+    // Funktion för att formatera datum
+    function formatDateRange(dateString) {
+        const monthMap = { "jan": 1, "feb": 2, "mar": 3, "apr": 4, "maj": 5, "jun": 6, "jul": 7, "aug": 8, "sep": 9, "okt": 10, "nov": 11, "dec": 12 };
+        const datePattern = /(\d{1,2})\s(\w{3})(?:\s?-\s?(\d{1,2})\s?(\w{3}))?/i;
+        const match = dateString.match(datePattern);
+        if (match) {
+            const startDay = match[1];
+            const startMonth = monthMap[match[2].toLowerCase()];
+            if (match[3] && match[4]) {
+                const endDay = match[3];
+                const endMonth = monthMap[match[4].toLowerCase()];
+                return `${startDay}/${startMonth} - ${endDay}/${endMonth}`;
+            }
+            return `${startDay}/${startMonth}`;
+        }
+        return '';
+    }
+
     function showNextEvent() {
         const eventTitle = document.getElementById("eventTitle");
         const eventLocation = document.getElementById("eventLocation");
@@ -141,13 +129,18 @@
         }
     }
 
-    // Funktion för att visa välkomstmeddelande
     function resetToWelcomeMessage() {
         document.getElementById("eventTitle").textContent = 'Välkommen till Eskilstuna';
         document.getElementById("eventLocation").textContent = '';
     }
 
-    // Hämta RSS-flödet initialt och uppdatera var 1 minut
+    // Lägg till en MutationObserver för att övervaka förändringar och ladda om flödet
+    const observer = new MutationObserver(() => {
+        fetchRSS();
+    });
+
+    observer.observe(document.body, { attributes: true, childList: true, subtree: true });
+
     fetchRSS();
     setInterval(fetchRSS, 60000);
 </script>
