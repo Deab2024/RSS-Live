@@ -54,18 +54,16 @@
     let currentEventIndex = 0; // Index för aktuellt evenemang
     let eventInterval; // Variabel för att lagra setInterval
 
-    // Funktion för att formatera datum till "dag/månad"
     function formatDate(dateString) {
         const date = new Date(dateString);
         if (!isNaN(date)) {
-            const day = date.getDate(); // Hämtar dag
-            const month = date.getMonth() + 1; // Hämtar månad (0-baserad)
-            return `${day}/${month}`; // Returnerar format dag/månad
+            const day = date.getDate();
+            const month = date.getMonth() + 1;
+            return `${day}/${month}`;
         }
-        return ''; // Om datumet inte är giltigt, returnera tom sträng
+        return '';
     }
 
-    // Funktion för att hämta och visa RSS-flödet
     async function fetchRSS() {
         const rssFeed = document.getElementById("rssFeed");
         try {
@@ -85,63 +83,48 @@
                 return;
             }
 
-            // Spara titlar och platser för alla evenemang
             events = [];
             for (let i = 0; i < items.length; i++) {
-                const rawDate = items[i].getElementsByTagName("pubDate")[0]?.textContent || ''; // Hämtar datum
-                const formattedDate = formatDate(rawDate); // Formatera datum till 1/12, 5/6, etc.
-                let title = items[i].getElementsByTagName("title")[0]?.textContent || 'Okänt evenemang';
+                const rawDate = items[i].getElementsByTagName("pubDate")[0]?.textContent || '';
+                const formattedDate = formatDate(rawDate);
+                let title = items[i].getElementsByTagName("title")[0]?.textContent || '';
                 const location = items[i].getElementsByTagName("description")[0]?.textContent || 'Plats ej angiven';
 
-                // Ta bort datum som "19 dec" från titeln med hjälp av regex
                 title = title.replace(/\d{1,2}\s(?:jan|feb|mar|apr|maj|jun|jul|aug|sep|okt|nov|dec)/gi, '').trim();
-
-                // Lägg endast datum framför den rensade titeln
-                const displayTitle = formattedDate ? `${formattedDate} - ${title}` : title;
+                const displayTitle = formattedDate ? (title ? `${formattedDate}, ${title}` : formattedDate) : title;
 
                 events.push({ title: displayTitle, location });
             }
 
-            // Starta visning av evenemang om det inte redan körs
             if (!eventInterval) {
-                showNextEvent(); // Visa första evenemanget
-                eventInterval = setInterval(showNextEvent, 10000); // Växla var 10:e sekund
+                showNextEvent();
+                eventInterval = setInterval(showNextEvent, 10000);
             }
-
-        } catch (error) {
+        } catch {
             resetToWelcomeMessage();
         }
     }
 
-    // Funktion för att visa nästa evenemang
     function showNextEvent() {
         const eventTitle = document.getElementById("eventTitle");
         const eventLocation = document.getElementById("eventLocation");
 
         if (events.length > 0) {
             const currentEvent = events[currentEventIndex];
-            eventTitle.textContent = currentEvent.title; // Titel med datum
-            eventLocation.textContent = currentEvent.location; // Plats utan datum
-
-            currentEventIndex = (currentEventIndex + 1) % events.length; // Går till nästa, loopar om vid slut
+            eventTitle.textContent = currentEvent.title;
+            eventLocation.textContent = currentEvent.location;
+            currentEventIndex = (currentEventIndex + 1) % events.length;
         } else {
             resetToWelcomeMessage();
         }
     }
 
-    // Funktion för att återgå till välkomstmeddelande
     function resetToWelcomeMessage() {
-        const eventTitle = document.getElementById("eventTitle");
-        const eventLocation = document.getElementById("eventLocation");
-
-        eventTitle.textContent = 'Välkommen till Eskilstuna';
-        eventLocation.textContent = '';
+        document.getElementById("eventTitle").textContent = 'Välkommen till Eskilstuna';
+        document.getElementById("eventLocation").textContent = '';
     }
 
-    // Kör funktionen för att hämta RSS-flödet initialt
     fetchRSS();
-
-    // Uppdatera RSS-flödet var 1 minut (60000 ms)
     setInterval(fetchRSS, 60000);
 </script>
 
