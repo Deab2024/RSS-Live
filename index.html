@@ -9,7 +9,6 @@
             background-color: black; /* Svart bakgrund */
             color: white;           /* Vit text */
             font-family: Arial, sans-serif; /* Typsnitt Arial */
-            font-size: 24px;       /* Textstorlek för titel */
             margin: 0;
             padding: 0;
             display: flex;
@@ -18,20 +17,26 @@
             height: 100vh;
         }
         #rssFeed {
-            max-width: 90%; /* Låt texten använda hela bredden */
-            padding-left: 80px; /* Ökat avstånd till vänster */
-            line-height: 1.2; /* Kompakt men läsbart radavstånd */
+            max-width: 100%; /* Använd hela skärmbredden */
+            padding-left: 20px; /* Minskad vänster-padding */
+            line-height: 1.1; /* Kompakt radavstånd */
             box-sizing: border-box; /* Inkludera padding i bredd */
             text-align: left; /* Vänsterställ texten */
         }
         .event-title {
             font-size: 24px; /* Huvudtextstorlek */
             margin: 0;
+            white-space: nowrap; /* Förhindra radbrytning */
+            overflow: hidden; /* Dölja överskjutande text */
+            text-overflow: ellipsis; /* "..." för text som inte ryms */
         }
         .event-location {
             font-size: 18px; /* Mindre textstorlek för platsen */
             margin: 5px 0 0;
             color: white; /* Vit text */
+            white-space: nowrap; /* Förhindra radbrytning */
+            overflow: hidden; /* Dölja överskjutande text */
+            text-overflow: ellipsis; /* "..." för text som inte ryms */
         }
     </style>
 </head>
@@ -55,7 +60,8 @@
         try {
             const response = await fetch(rssUrl);
             if (!response.ok) {
-                throw new Error('Kunde inte hämta RSS-flödet');
+                resetToWelcomeMessage();
+                return;
             }
 
             const data = await response.json();
