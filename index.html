@@ -88,15 +88,15 @@
             // Spara titlar och platser för alla evenemang
             events = [];
             for (let i = 0; i < items.length; i++) {
+                const rawDate = items[i].getElementsByTagName("pubDate")[0]?.textContent || ''; // Hämtar datum
+                const formattedDate = formatDate(rawDate); // Formatera datum till 1/12, 5/6, etc.
                 const title = items[i].getElementsByTagName("title")[0]?.textContent || 'Okänt evenemang';
-                const rawDate = items[i].getElementsByTagName("pubDate")[0]?.textContent || ''; // Hämtar publiceringsdatum
-                const formattedDate = formatDate(rawDate); // Formatera datum
                 const location = items[i].getElementsByTagName("description")[0]?.textContent || 'Plats ej angiven';
 
-                // Lägg till det formaterade datumet i platsinformationen
-                const displayLocation = formattedDate ? `${formattedDate} - ${location}` : location;
+                // Lägg endast datum framför titeln
+                const displayTitle = formattedDate ? `${formattedDate} - ${title}` : title;
 
-                events.push({ title, location: displayLocation });
+                events.push({ title: displayTitle, location });
             }
 
             // Starta visning av evenemang om det inte redan körs
@@ -118,8 +118,8 @@
 
         if (events.length > 0) {
             const currentEvent = events[currentEventIndex];
-            eventTitle.textContent = currentEvent.title;
-            eventLocation.textContent = currentEvent.location;
+            eventTitle.textContent = currentEvent.title; // Titel med datum
+            eventLocation.textContent = currentEvent.location; // Plats utan datum
 
             currentEventIndex = (currentEventIndex + 1) % events.length; // Går till nästa, loopar om vid slut
         } else {
