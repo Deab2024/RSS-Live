@@ -90,10 +90,13 @@
             for (let i = 0; i < items.length; i++) {
                 const rawDate = items[i].getElementsByTagName("pubDate")[0]?.textContent || ''; // Hämtar datum
                 const formattedDate = formatDate(rawDate); // Formatera datum till 1/12, 5/6, etc.
-                const title = items[i].getElementsByTagName("title")[0]?.textContent || 'Okänt evenemang';
+                let title = items[i].getElementsByTagName("title")[0]?.textContent || 'Okänt evenemang';
                 const location = items[i].getElementsByTagName("description")[0]?.textContent || 'Plats ej angiven';
 
-                // Lägg endast datum framför titeln
+                // Ta bort datum som "19 dec" från titeln med hjälp av regex
+                title = title.replace(/\d{1,2}\s(?:jan|feb|mar|apr|maj|jun|jul|aug|sep|okt|nov|dec)/gi, '').trim();
+
+                // Lägg endast datum framför den rensade titeln
                 const displayTitle = formattedDate ? `${formattedDate} - ${title}` : title;
 
                 events.push({ title: displayTitle, location });
@@ -134,14 +137,6 @@
         eventTitle.textContent = 'Välkommen till Eskilstuna';
         eventLocation.textContent = '';
     }
-
-    // Observera ändringar i stil eller innehåll och ladda om flödet
-    const rssFeedContainer = document.getElementById('rssFeed');
-    const observer = new MutationObserver(() => {
-        fetchRSS(); // Ladda om flödet om ändringar upptäcks
-    });
-
-    observer.observe(rssFeedContainer, { attributes: true, childList: true, subtree: true });
 
     // Kör funktionen för att hämta RSS-flödet initialt
     fetchRSS();
